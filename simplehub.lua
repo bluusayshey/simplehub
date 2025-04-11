@@ -1,6 +1,6 @@
--- Simple Hub! - V2.7 (Small Update)
--- ( - Temporarily disabled save preferences due to issues with file writing. - )
--- ( - Added Date to title. - )
+-- Simple Hub! - V2.71 (Tweaks And Fixes)
+-- ( - Improved ESP to make it more reliable - )
+
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -255,10 +255,15 @@ local function updateESP(player)
 end
 
 game.Players.PlayerAdded:Connect(function(player)
+    -- Trigger ESP update when the player's character spawns
     player.CharacterAdded:Connect(function()
         updateESP(player)
     end)
-    updateESP(player)
+
+    -- Call updateESP immediately if the player's character already exists
+    if player.Character then
+        updateESP(player)
+    end
 end)
 
 game.Players.PlayerRemoving:Connect(function(player)

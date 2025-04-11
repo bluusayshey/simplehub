@@ -1,8 +1,6 @@
--- Simple Hub! - V2.6 (Cleaned Up and Improved)
---( -Added Walkspeed and JumpPower Clamps- )
---( -Redundant Code Removed- )
---( -Added Settings Save/Load- )
---( -Added ESP- )
+-- Simple Hub! - V2.7 (Small Update)
+-- ( - Temporarily disabled save preferences due to issues with file writing. - )
+-- ( - Added Date to title. - )
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -48,7 +46,7 @@ Instance.new("UICorner", container).CornerRadius = UDim.new(0, 12)
 Instance.new("UIStroke", container).Color = Color3.fromRGB(100, 100, 100)
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.J then
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.RightControl then
         container.Visible = not container.Visible
     end
 end)
@@ -56,7 +54,7 @@ end)
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -20, 0, 40)
 title.Position = UDim2.new(0, 10, 0, 5)
-title.Text = "Simple Hub [J = Hide/Show]"
+title.Text = "Simple Hub V2.7 {" .. os.date("%Y-%m-%d") .. "}"
 title.Font = Enum.Font.GothamBold
 title.TextColor3 = Color3.new(1, 1, 1)
 title.TextSize = 20
@@ -307,11 +305,11 @@ createToggle("Clear Sky", false, function(state)
     Lighting.FogEnd = state and 100000 or 1000
 end)
 createToggle("Spin", false, function(state) spin = state end)
-createToggle("Save Preferences", false, function(state)
-    if state then
-        saveSettings()
-    end
-end)
+--createToggle("Save Preferences", false, function(state)
+    --if state then
+        --saveSettings()
+    --end
+--end)
 
 -- Input Fields
 createStatInput("WalkSpeed", walkspeed, function(val)

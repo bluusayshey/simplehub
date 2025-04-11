@@ -1,4 +1,4 @@
--- Creator Power Hub - V2.2 (WalkSpeed/JumpPower text input added)
+-- Simple Hub! - V2.4 (ESP System working and toggleable)
 -- Toggles + Sliders + Scrollable Layout + Safety Checks + UI Toggle
 
 local Players = game:GetService("Players")
@@ -29,7 +29,7 @@ local function safeGetHumanoid()
 end
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "CreatorPowerHub"
+gui.Name = "SimpleHubGui"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
 gui.Parent = player:WaitForChild("PlayerGui")
@@ -56,7 +56,7 @@ end)
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -20, 0, 40)
 title.Position = UDim2.new(0, 10, 0, 5)
-title.Text = "Power Hub [J = Hide/Show]"
+title.Text = "Simple Hub [J = Hide/Show]"
 title.Font = Enum.Font.GothamBold
 title.TextColor3 = Color3.new(1, 1, 1)
 title.TextSize = 20
@@ -195,7 +195,54 @@ RunService.RenderStepped:Connect(function()
 	end
 end)
 
+-- ESP System
+local function updateESP(player)
+    if esp then
+        if not player.Character then
+            player.CharacterAdded:Wait()
+        end
+        local highlight = Instance.new("Highlight")
+        local teamColor = player.TeamColor.Color
+        highlight.Adornee = player.Character
+        highlight.FillColor = Color3.fromRGB(teamColor.r * 255, teamColor.g * 255, teamColor.b * 255)
+        highlight.FillTransparency = 0.5
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+        highlight.Parent = player.Character
+    else
+        if player.Character then
+            for _, child in ipairs(player.Character:GetChildren()) do
+                if child:IsA("Highlight") then
+                    child:Destroy()
+                end
+            end
+        end
+    end
+end
+
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        updateESP(player)
+    end)
+    updateESP(player)
+end)
+
+game.Players.PlayerRemoving:Connect(function(player)
+    if player.Character then
+        for _, child in ipairs(player.Character:GetChildren()) do
+            if child:IsA("Highlight") then
+                child:Destroy()
+            end
+        end
+    end
+end)
+
 -- Toggle Buttons
+createToggle("ESP Boxes", false, function(state)
+    esp = state
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        updateESP(player)
+    end
+end)
 createToggle("Noclip", false, function(state) noclip = state end)
 createToggle("Fly", false, function(state) flying = state end)
 createToggle("FullBright", false, function(state)
@@ -262,7 +309,7 @@ end)
 
 player.CharacterAdded:Connect(function(char)
 	character = char
-	wait(1)
+	wait(1) -- Wait for character to load
 	local hum = safeGetHumanoid()
 	if hum then
 		hum.WalkSpeed = walkspeed

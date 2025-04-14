@@ -1,4 +1,4 @@
--- Simple Hub! - V2.71 (Tweaks And Fixes)
+-- Simple Hub! - V2.72 (More edits to ESP system)
 -- ( - Improved ESP to make it more reliable - )
 
 
@@ -174,7 +174,8 @@ local function loadSettings()
     end
 end
 
-loadSettings()
+--Uncomment to autoload settings on startup
+--loadSettings()
 
 -- Fly System
 local flyVelocity, flyGyro
@@ -233,13 +234,21 @@ end)
 -- ESP System
 local function updateESP(player)
     if esp then
-        if not player.Character then
-            player.CharacterAdded:Wait()
-        end
+        game.Players.PlayerAdded:Connect(function(player)
+            player.CharacterAdded:Connect(function(character)
+                character:WaitForChild("HumanoidRootPart")
+                updateESP(player)
+            end)
+        
+            if player.Character then
+                updateESP(player)
+            end
+        end)
+        if player == Players.LocalPlayer then return end
         local highlight = Instance.new("Highlight")
         local teamColor = player.TeamColor.Color
         highlight.Adornee = player.Character
-        highlight.FillColor = Color3.fromRGB(teamColor.r * 255, teamColor.g * 255, teamColor.b * 255)
+        highlight.FillColor = teamColor
         highlight.FillTransparency = 0.5
         highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
         highlight.Parent = player.Character
@@ -254,9 +263,12 @@ local function updateESP(player)
     end
 end
 
+-- Handle new players and character resets
 game.Players.PlayerAdded:Connect(function(player)
-    -- Trigger ESP update when the player's character spawns
-    player.CharacterAdded:Connect(function()
+    -- Trigger ESP update when the player's character spawns or respawns
+    player.CharacterAdded:Connect(function(character)
+        -- Wait for the character to fully load
+        character:WaitForChild("HumanoidRootPart")
         updateESP(player)
     end)
 
@@ -266,6 +278,7 @@ game.Players.PlayerAdded:Connect(function(player)
     end
 end)
 
+-- Remove highlights when a player leaves
 game.Players.PlayerRemoving:Connect(function(player)
     if player.Character then
         for _, child in ipairs(player.Character:GetChildren()) do
@@ -276,17 +289,19 @@ game.Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
-if not pcall(function() Instance.new("Highlight") end) then
-    warn("ESP not supported in this game.")
-    esp = false
-end
-
 -- Toggle Buttons
 createToggle("ESP Boxes", false, function(state)
     esp = state
+    loop = state
     for _, player in ipairs(game.Players:GetPlayers()) do
         updateESP(player)
     end
+    while loop do
+        wait(1)
+        updateESP(player)
+        if not loop then break end
+    end
+        
 end)
 createToggle("Noclip", false, function(state) noclip = state end)
 createToggle("Fly", false, function(state) flying = state end)
@@ -298,9 +313,9 @@ createToggle("FullBright", false, function(state)
         Lighting.FogEnd = 100000
         Lighting.GlobalShadows = false
     else
-        Lighting.Brightness = 1
-        Lighting.ClockTime = 12
-        Lighting.FogEnd = 1000
+        Lighting.Brightness = originalBrightness
+        Lighting.ClockTime = originalClockTime
+        Lighting.FogEnd = originalFogEnd
         Lighting.GlobalShadows = true
     end
 end)
@@ -310,6 +325,8 @@ createToggle("Clear Sky", false, function(state)
     Lighting.FogEnd = state and 100000 or 1000
 end)
 createToggle("Spin", false, function(state) spin = state end)
+
+--Unused toggle for future use
 --createToggle("Save Preferences", false, function(state)
     --if state then
         --saveSettings()
